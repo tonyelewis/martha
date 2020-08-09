@@ -35,7 +35,6 @@ def get_ninja_deps_str_for_dir(ninja_build_dir: Path) -> str:
 
 	:param ninja_build_dir: The ninja build directory to process
 	'''
-
 	logger.info( f'Calling ninja on directory {ninja_build_dir} to get deps...' )
 
 	ninja_deps_result = _result_of_checked_ninja_run( [
@@ -98,13 +97,12 @@ def compdb_of_compdb_str(compdb_str: str) -> List[NinjaCompDBRecord]:
 	return [ninja_comp_db_record_of_raw_dict(x) for x in json.loads(compdb_str)]
 
 
-def get_ninja_compdb_str_for_dir(ninja_build_dir: Path) -> List[NinjaCompDBRecord]:
+def get_ninja_compdb_str_for_dir(ninja_build_dir: Path) -> str:
 	'''
 	Call ninja to query the compdb and return the resulting string
 
 	:param ninja_build_dir: The ninja build directory to process
 	'''
-
 	logger.info(
 		f'Calling ninja on directory {ninja_build_dir} to get the compdb...'
 	)
@@ -124,7 +122,6 @@ def get_ninja_compdb_for_dir(ninja_build_dir: Path) -> List[NinjaCompDBRecord]:
 
 	:param ninja_build_dir: The ninja build directory to process
 	'''
-
 	return compdb_of_compdb_str(get_ninja_compdb_str_for_dir(ninja_build_dir))
 
 

@@ -8,7 +8,7 @@ def shlex_join_shim(command_parts: List[str],
                     ) -> str:
 	'''
 	Shim slex.join(), which was only added in Python 3.8
-	
+
 	See https://docs.python.org/3/library/shlex.html#shlex.join
 
 	:param command_parts : The command parts to join

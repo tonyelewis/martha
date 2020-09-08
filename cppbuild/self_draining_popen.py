@@ -3,7 +3,7 @@ import subprocess
 import threading
 
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, List
 
 
 @dataclass

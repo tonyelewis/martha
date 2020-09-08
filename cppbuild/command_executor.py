@@ -1,23 +1,26 @@
+import datetime
+import time
+
 from dataclasses import dataclass
 from pathlib import Path
-from subprocess import PIPE, Popen
 from typing import Any, Callable, Iterable, List, Optional, Tuple
 
+from cppbuild.self_draining_popen import SelfDrainingPopen
 
 @dataclass
 class CommandJob:
 	'''
-	Represent one command job to be performed 
+	Represent one command job to be performed
 	'''
 
 	# The command to be performed
 	command: List[str]
 
 	# The directory in which the command should be performed
-	run_dir: Path
+	run_dir: Path = Path('/')
 
 	# Data associated with the command that will be passed in the post-completion callback
-	associated_data: Any
+	associated_data: Any = None
 
 
 def _do_nothing(*args, **kwargs):
@@ -38,7 +41,7 @@ class CommandExecutor:
 
 		# Create a list of slots in which to perform the jobs
 		self._running_jobs: List[
-			Optional[Tuple[Popen, CommandJob]]
+			Optional[Tuple[SelfDrainingPopen, CommandJob]]
 		] = [None] * num_parallel_jobs
 
 		# Create a queue of jobs that have not yet been started
@@ -72,24 +75,22 @@ class CommandExecutor:
 				if len(self._queue):
 					command_job = self._queue.pop(0)
 					self._running_jobs[index] = (
-						Popen(
+						SelfDrainingPopen(
 							command_job.command,
 							cwd=command_job.run_dir,
-							stdout=PIPE,
-							stderr=PIPE
 						),
 						command_job,
 					)
 
 			# If a completed job was grabbed, post-process it
 			if retrieved_job is not None:
-				completed_popen: Popen
+				completed_popen: SelfDrainingPopen
 				job_details: CommandJob
 				completed_popen, job_details = retrieved_job
 				self.callback(
 					returncode=completed_popen.returncode,
-					stdout='' if completed_popen.stdout is None else completed_popen.stdout.read(),
-					stderr='' if completed_popen.stderr is None else completed_popen.stderr.read(),
+					stdout='' if completed_popen.stdout_bytes is None else completed_popen.stdout_bytes,
+					stderr='' if completed_popen.stderr_bytes is None else completed_popen.stderr_bytes,
 					command=job_details.command,
 					run_dir=job_details.run_dir,
 					associated_data=job_details.associated_data,
@@ -128,3 +129,19 @@ class CommandExecutor:
 		The number of jobs waiting in the queue
 		'''
 		return len(self._queue)
+
+
+def finish_all(executor: CommandExecutor):
+	'''
+	Wait until the specified CommandExecutor has finished all its work
+
+	This could avoid polling (though then it might )
+
+	:param executor : The CommandExecutor to wait for
+	'''
+	while not executor.all_are_finished():
+		time.sleep(
+			datetime.timedelta(microseconds=100) /
+			datetime.timedelta(seconds=1)
+		)
+		executor.update()

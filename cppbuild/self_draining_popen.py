@@ -48,11 +48,11 @@ class SelfDrainingPopen:
 		if 'stderr' in kwargs or 'stdout' in kwargs:
 			raise ValueError('stderr/stdout should not be specified to SelfDrainingPopen constructor')
 		self._popen = subprocess.Popen(
-				*args,
-				**kwargs,
-				stderr=subprocess.PIPE,
-				stdout=subprocess.PIPE,
-			)
+			*args,
+			**kwargs,
+			stderr=subprocess.PIPE,
+			stdout=subprocess.PIPE,
+		) # type: ignore
 
 		# Create DrainedByteStreams to which the Popen stderr/stdout can be drained
 		self._drained_bytes = DrainedByteStreams()

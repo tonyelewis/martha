@@ -20,7 +20,9 @@ class RawDepRecord:
 
 	# is_valid as reported by ninja
 	#
-	# TODOCUMENT: What exactly does this mean?
+	# It isn't fully clear what this means.
+	# Values seen so far: VALID, STALE.
+	# STALE occurs if the object file no long exists but doesn't occur if the source files are touched.
 	is_valid: bool
 
 	# The dependencies (roughly, the headers)

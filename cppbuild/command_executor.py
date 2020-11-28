@@ -97,7 +97,7 @@ class CommandExecutor:
 						run_dir=job_details.run_dir,
 						associated_data=job_details.associated_data,
 					),
-					executor=self,
+					num_remaining_commands=num_remaining(self),
 				)
 
 	def extend_queue(self, jobs: Iterable[CommandJob]) -> None:

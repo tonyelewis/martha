@@ -23,7 +23,7 @@ class ExeResultStasher:
 	def post_process_callback( self,
 	                           *,
 	                           result: CommandResult,
-	                           executor: CommandExecutor,
+	                           num_remaining_commands: int,
 	                           ):
 		'''
 		The callback for CommandExecutor

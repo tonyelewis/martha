@@ -101,14 +101,14 @@ class SelfDrainingPopen:
 		return self._popen.returncode
 
 	@property
-	def stderr_bytes(self):
+	def stderr_bytes(self) -> bytes:
 		'''
 		Readonly access to stderr_bytes
 		'''
 		return self._drained_bytes.stderr
 
 	@property
-	def stdout_bytes(self):
+	def stdout_bytes(self) -> bytes:
 		'''
 		Readonly access to stdout_bytes
 		'''

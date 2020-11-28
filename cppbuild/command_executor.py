@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Iterable, List, Optional, Tuple
 
+from cppbuild.command_result import CommandResult
 from cppbuild.self_draining_popen import SelfDrainingPopen
 
 @dataclass
@@ -88,23 +89,16 @@ class CommandExecutor:
 				job_details: CommandJob
 				completed_popen, job_details = retrieved_job
 				self.callback(
-					returncode=completed_popen.returncode,
-					stdout='' if completed_popen.stdout_bytes is None else completed_popen.stdout_bytes,
-					stderr='' if completed_popen.stderr_bytes is None else completed_popen.stderr_bytes,
-					command=job_details.command,
-					run_dir=job_details.run_dir,
-					associated_data=job_details.associated_data,
+					result=CommandResult(
+						returncode=completed_popen.returncode,
+						stdout=completed_popen.stdout_bytes,
+						stderr=completed_popen.stderr_bytes,
+						command=job_details.command,
+						run_dir=job_details.run_dir,
+						associated_data=job_details.associated_data,
+					),
+					executor=self,
 				)
-
-	def all_are_finished(self) -> bool:
-		'''
-		Extend the queue with the specified CommandJobs and update
-		'''
-		return (
-			self.num_in_queue() == 0
-			and
-			all(x is None for x in self._running_jobs)
-		)
 
 	def extend_queue(self, jobs: Iterable[CommandJob]) -> None:
 		'''
@@ -131,6 +125,20 @@ class CommandExecutor:
 		return len(self._queue)
 
 
+def num_remaining(command_executor: CommandExecutor) -> int:
+	'''
+	The number of jobs currently running or queued to run
+	'''
+	return command_executor.num_running() + command_executor.num_in_queue()
+
+
+def all_are_finished(command_executor: CommandExecutor) -> bool:
+	'''
+	Whether the executor has completed all jobs (ie none running or queued)
+	'''
+	return num_remaining(command_executor) == 0
+
+
 def finish_all(executor: CommandExecutor):
 	'''
 	Wait until the specified CommandExecutor has finished all its work
@@ -139,7 +147,7 @@ def finish_all(executor: CommandExecutor):
 
 	:param executor : The CommandExecutor to wait for
 	'''
-	while not executor.all_are_finished():
+	while not all_are_finished(executor):
 		time.sleep(
 			datetime.timedelta(microseconds=100) /
 			datetime.timedelta(seconds=1)

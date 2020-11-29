@@ -32,28 +32,36 @@ class RawDepRecord:
 	deps: List[Path]
 
 
-def parse_compiler_deps(compiler_deps_str: str) -> RawDepRecord:
+def parse_compiler_deps(compiler_deps_str: str, *, target: Path) -> RawDepRecord:
 	'''
 	Parse dependencies as output by a compiler from the specified string
 
-	:param compiler_deps_str: The string from which to parse the dependencies
+	The target must be specified to disambiguate the initial line
+	(eg does `fred.cpp: mary.cpp:` refer to two files (`fred.cpp`,  `mary.cpp:`) or one (`fred.cpp: mary.cpp`:))
+
+	:param compiler_deps_str : The string from which to parse the dependencies
+	:param target            : The target being compiled (must exactly match the initial deps entry)
 	'''
-	compiler_deps_str = compiler_deps_str.replace('\\\n', '')
-	parts = shlex.split(compiler_deps_str)
-	assert parts
-	assert parts[0].endswith(':')
+	assert compiler_deps_str.startswith( f'{target}: ' )
+	deps_str = compiler_deps_str[len(str(target))+1:]
+	deps_str = deps_str.replace('\\\n', '')
+	deps = shlex.split(deps_str)
 	return RawDepRecord(
-		target=Path(parts[0][:-1]),
+		target=target,
 		is_valid=True,
-		deps=[Path(x) for x in parts[1:]],
+		deps=[Path(x) for x in deps],
 	)
 
 
-def read_compiler_deps_file(compiler_deps_file: Path) -> RawDepRecord:
+def read_compiler_deps_file(compiler_deps_file: Path, *, target: Path) -> RawDepRecord:
 	'''
 	Parse dependencies as output by a compiler from the specified file
 
-	:param compiler_deps_file: The file from which to parse the dependencies
+	:param compiler_deps_file : The file from which to parse the dependencies
+	:param target             : The target being compiled (must exactly match the initial deps entry)
 	'''
 	with open(compiler_deps_file, 'r') as compiler_deps_fh:
-		return parse_compiler_deps(compiler_deps_fh.read())
+		return parse_compiler_deps(
+			compiler_deps_str=compiler_deps_fh.read(),
+			target=target,
+		)

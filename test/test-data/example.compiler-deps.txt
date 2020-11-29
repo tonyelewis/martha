@@ -1,5 +1,5 @@
-source/options/options_block/pdb_input_spec.hpp: \
-  source/options/options_block/pdb_input_spec.hpp \
+source/options/options_block/pdb: input_spec.hpp: \
+  source/options/options_block/pdb\:\ input_spec.hpp \
   source/src\ common/common/path_type_aliases.hpp \
   /opt/boost_1_73_0_normal_c++17/include/boost-1_73/boost/filesystem/path.hpp \
   /opt/boost_1_73_0_normal_c++17/include/boost-1_73/boost/config.hpp \

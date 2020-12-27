@@ -1,5 +1,7 @@
 import blessed
 
+from typing import List
+
 
 class DisplayText:
 	'''

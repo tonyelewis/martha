@@ -52,7 +52,7 @@ class SelfDrainingPopen:
 			**kwargs,
 			stderr=subprocess.PIPE,
 			stdout=subprocess.PIPE,
-		) # type: ignore
+		) # type: ignore[call-overload]
 
 		# Create DrainedByteStreams to which the Popen stderr/stdout can be drained
 		self._drained_bytes = DrainedByteStreams()

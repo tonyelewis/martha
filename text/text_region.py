@@ -34,10 +34,12 @@ def term_printable_substring(line: str,
 	# (by Python string len() and by terminal display length)
 	# up to each of the boundaries of the parts
 	#
+	# NOTE: Using a chain with preceding (0,) rather than initial=0 to maintain support for Python 3.7
+	#
 	# TODO: Once the fix for https://github.com/python/typeshed/issues/4888 has propagated out, remove the `type: ignore[call-overload]`
 	parts                       = term.split_seqs(line)
-	cum_lengths:      List[int] = list(itertools.accumulate((len(x)         for x in parts), initial=0)) # type: ignore[call-overload]
-	cum_term_lengths: List[int] = list(itertools.accumulate((term.length(x) for x in parts), initial=0)) # type: ignore[call-overload]
+	cum_lengths:      List[int] = list(itertools.accumulate( itertools.chain( ( 0, ), (len(x)         for x in parts) ))) # type: ignore[call-overload]
+	cum_term_lengths: List[int] = list(itertools.accumulate( itertools.chain( ( 0, ), (term.length(x) for x in parts) ))) # type: ignore[call-overload]
 
 	# Get the (earliest/latest) indices of parts for which the corresponding cumulative display length matches begin_printable_index/end_printable_index
 	parts_begin_index = bisect.bisect_left( cum_term_lengths, begin_printable_index)

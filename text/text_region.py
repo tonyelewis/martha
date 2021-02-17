@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import bisect
 import dataclasses
 import itertools
@@ -120,13 +118,6 @@ def _wrapped_line_id_of_index( index: int,
 		lo=min_full_line_index,
 		# hi=max_full_line_index,
 	)
-	if full_line_index > max_full_line_index:
-		print()
-		print( f'{index=}' )
-		print( f'{num_wrapped_lines_by_end=}' )
-		print( f'{min_full_line_index=}' )
-		print( f'{max_full_line_index=}' )
-		print( f'{full_line_index=}' )
 
 	# Return a WrappedLineId for full_line_index and however many more lines are required to get to index
 	# (clamping to a valid WrappedLineId for the num_wrapped_lines_by_end, or WrappedLineId(num_lines, 0)

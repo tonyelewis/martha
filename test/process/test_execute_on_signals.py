@@ -96,14 +96,12 @@ def other_process_executes_action( also_on_exit: bool,
 	return received == DATA
 
 
-def test_execute_on_signals_situations():
-	for also_on_exit in ( True, False ):
-		for test_signal in ( signal.SIGTERM, signal.SIGINT, None ):
-			for handle_signals in ( False, None ):
-				assert other_process_executes_action(
-					also_on_exit=also_on_exit,
-					test_signal=test_signal,
-					handle_signals=handle_signals
-				) == ( handle_signals is None and ( test_signal is not None or also_on_exit ) )
-
-
+@pytest.mark.parametrize('also_on_exit', (True, False))
+@pytest.mark.parametrize('test_signal', (signal.SIGTERM, signal.SIGINT, None))
+@pytest.mark.parametrize('handle_signals', (False, None))
+def test_execute_on_signals_situations(also_on_exit, test_signal, handle_signals):
+	assert other_process_executes_action(
+		also_on_exit=also_on_exit,
+		test_signal=test_signal,
+		handle_signals=handle_signals
+	) == (handle_signals is None and (test_signal is not None or also_on_exit))

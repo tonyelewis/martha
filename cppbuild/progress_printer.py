@@ -1,9 +1,8 @@
 import os
 import sys
 
-from typing import List, Optional, TextIO
+from typing import TextIO
 
-from cppbuild.command_executor import CommandExecutor, all_are_finished, num_remaining
 from cppbuild.command_result import CommandResult
 from cppbuild.shlex_join import shlex_join_shim
 

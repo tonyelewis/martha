@@ -1,13 +1,13 @@
 import contextlib
 import signal
 
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 
 @contextlib.contextmanager
 def execute_on_signals(action: Callable,
                        *,
-                       signals: List[signal.Signals] = [ signal.SIGTERM, signal.SIGINT ],
+                       signals: Optional[List[signal.Signals]] = None, # pylint: disable=no-member
                        also_on_normal_exit: bool = False,
                        ):
 	'''
@@ -17,12 +17,14 @@ def execute_on_signals(action: Callable,
 	:param handle_signals      : (optional; default [ signal.SIGTERM, signal.SIGINT ]) The signals to handle
 	:param also_on_normal_exit : Whether to also perform the action on normal exit
 	'''
-	# Create a store of the handlers that were previously in place for each of the signals
-	prev_handler_of_signal: Dict[int, Any] = { sig: None for sig in signals }
+	signals_or_default = [ signal.SIGTERM, signal.SIGINT ] if signals is None else signals
 
-	def signal_handling_function(signum, frame):
+	# Create a store of the handlers that were previously in place for each of the signals
+	prev_handler_of_signal: Dict[int, Any] = { sig: None for sig in signals_or_default }
+
+	def signal_handling_function(signum, _frame):
 		# Reinstate the original signal handlers
-		for sig in signals:
+		for sig in signals_or_default:
 			signal.signal( sig, prev_handler_of_signal[ sig ] )
 
 		# Perform the action
@@ -33,7 +35,7 @@ def execute_on_signals(action: Callable,
 
 	# Install the signal_handling_function for each of the signals,
 	# recording each previous handler in prev_handler_of_signal
-	for sig in signals:
+	for sig in signals_or_default:
 		prev_handler_of_signal[ sig ] = signal.signal( sig, signal_handling_function )
 
 	# Yield control back to the function using this context-manager

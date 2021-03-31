@@ -13,5 +13,5 @@ class WrapWidth:
 	width: int
 
 	def __post_init__(self):
-		if type(self.width) != int or self.width <= 0:
-			raise ValueError( f'wrap width must be a strictly positive integer, not { self.width }' )
+		if not isinstance(self.width, int) or self.width <= 0:
+			raise ValueError(f'wrap width must be a strictly positive integer, not { self.width }')

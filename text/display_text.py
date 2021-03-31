@@ -1,8 +1,9 @@
-import blessed  # type: ignore[import]
-
 from typing import List
 
+import blessed  # type: ignore[import]
+
 from text.wrap_width import WrapWidth
+
 
 class DisplayText:
 	'''
@@ -65,7 +66,7 @@ def num_wrapped_lines_of_length(length: int,
 	:param length     : The length of the line of text
 	:param wrap_width : The length at which the text is wrapped
 	'''
-	return max( 1, -(-length // wrap_width.width))
+	return max(1, -(-length // wrap_width.width))
 
 
 def last_wrapped_line_num_of_length(length: int,

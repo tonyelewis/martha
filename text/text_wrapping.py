@@ -50,11 +50,11 @@ def id_of_wrapped_line_before_line(line_index: int,
 	return last_wrapped_line_id_of_line_index(line_index - 1, text=text, wrap_width=wrap_width)
 
 
-def constrained_to_text_and_width( wrapped_line_id: WrappedLineId,
-                                   *,
-                                   text: DisplayText,
-                                   wrap_width: WrapWidth,
-                                   ) -> WrappedLineId:
+def constrained_to_text_and_width(wrapped_line_id: WrappedLineId,
+                                  *,
+                                  text: DisplayText,
+                                  wrap_width: WrapWidth,
+                                  ) -> WrappedLineId:
 	'''
 	Return a copy of the specified WrappedLineId that has been constrained to be valid
 	in the specified DisplayText when wrapped with the specified wrap_width
@@ -80,11 +80,11 @@ def constrained_to_text_and_width( wrapped_line_id: WrappedLineId,
 	)
 
 
-def id_of_wrapped_line_before_wrapped_line( wrapped_line_id: WrappedLineId,
-                                            *,
-                                            text: DisplayText,
-                                            wrap_width: WrapWidth,
-                                            ) -> WrappedLineId:
+def id_of_wrapped_line_before_wrapped_line(wrapped_line_id: WrappedLineId,
+                                           *,
+                                           text: DisplayText,
+                                           wrap_width: WrapWidth,
+                                           ) -> WrappedLineId:
 	'''
 	The WrappedLineId of the wrapped line preceding the specified one in the specified text, with
 	the specified wrap-width
@@ -101,7 +101,7 @@ def id_of_wrapped_line_before_wrapped_line( wrapped_line_id: WrappedLineId,
 		wrap_width=wrap_width,
 	)
 	if constrained_wrapped_line_id.wrapped_line_offset > 0:
-		return decremented_wrapped_line_offset_copy( constrained_wrapped_line_id )
+		return decremented_wrapped_line_offset_copy(constrained_wrapped_line_id)
 	return id_of_wrapped_line_before_line(
 		wrapped_line_id.line_index,
 		text=text,
@@ -109,11 +109,11 @@ def id_of_wrapped_line_before_wrapped_line( wrapped_line_id: WrappedLineId,
 	)
 
 
-def id_of_wrapped_line_after_wrapped_line( wrapped_line_id: WrappedLineId,
-                                           *,
-                                           text: DisplayText,
-                                           wrap_width: WrapWidth,
-                                           ) -> WrappedLineId:
+def id_of_wrapped_line_after_wrapped_line(wrapped_line_id: WrappedLineId,
+                                          *,
+                                          text: DisplayText,
+                                          wrap_width: WrapWidth,
+                                          ) -> WrappedLineId:
 	'''
 	The WrappedLineId of the wrapped line following the specified one in the specified text, with
 	the specified wrap-width
@@ -130,8 +130,8 @@ def id_of_wrapped_line_after_wrapped_line( wrapped_line_id: WrappedLineId,
 		wrap_width=wrap_width,
 	)
 	if wrapped_line_id.wrapped_line_offset < last_wrapped_line_num:
-		return incremented_wrapped_line_offset_copy( wrapped_line_id )
+		return incremented_wrapped_line_offset_copy(wrapped_line_id)
 	return WrappedLineId(
-		line_index=min( index_of_last_line( text ), wrapped_line_id.line_index + 1 ),
+		line_index=min(index_of_last_line(text), wrapped_line_id.line_index + 1),
 		wrapped_line_offset=0,
 	)

@@ -2,7 +2,7 @@ import bisect
 import dataclasses
 import itertools
 
-from typing import Iterable, Iterator, List, Tuple, Optional
+from typing import Iterable, List
 
 import blessed  # type: ignore[import]
 
@@ -33,17 +33,15 @@ def term_printable_substring(line: str,
 	# Break the line up into characters and sequences, and calculate the cumulative lengths
 	# (by Python string len() and by terminal display length)
 	# up to each of the boundaries of the parts
-	#
-	# NOTE: Using a chain with preceding (0,) rather than initial=0 to maintain support for Python 3.7
-	#
-	# TODO: Once the fix for https://github.com/python/typeshed/issues/4888 has propagated out, remove the `type: ignore[call-overload]`
-	parts                       = term.split_seqs(line)
-	cum_lengths:      List[int] = list(itertools.accumulate( itertools.chain( ( 0, ), (len(x)         for x in parts) ))) # type: ignore[call-overload]
-	cum_term_lengths: List[int] = list(itertools.accumulate( itertools.chain( ( 0, ), (term.length(x) for x in parts) ))) # type: ignore[call-overload]
+	parts = term.split_seqs(line)
+	# autopep8: off
+	cum_lengths:      List[int] = list(itertools.accumulate(itertools.chain((0, ), (len(x)         for x in parts))))
+	cum_term_lengths: List[int] = list(itertools.accumulate(itertools.chain((0, ), (term.length(x) for x in parts))))
+	# autopep8: on
 
 	# Get the (earliest/latest) indices of parts for which the corresponding cumulative display length matches begin_printable_index/end_printable_index
-	parts_begin_index = bisect.bisect_left( cum_term_lengths, begin_printable_index)
-	parts_end_index = bisect.bisect_right( cum_term_lengths, end_printable_index, lo=parts_begin_index) - 1
+	parts_begin_index = bisect.bisect_left(cum_term_lengths, begin_printable_index)
+	parts_end_index = bisect.bisect_right(cum_term_lengths, end_printable_index, lo=parts_begin_index) - 1
 
 	return (
 		# Return any sequences before the selected substring
@@ -53,45 +51,44 @@ def term_printable_substring(line: str,
 	)
 
 
-def _num_wrapped_lines_by_end( disp_text: DisplayText,
-                               *,
-                               wrap_width: WrapWidth
-                               ) -> List[int]:
+def _num_wrapped_lines_by_end(disp_text: DisplayText,
+                              *,
+                              wrap_width: WrapWidth
+                              ) -> List[int]:
 	'''
 	The number of wrapped lines that the specified text completes by the end of each of the full lines
 
 	:param disp_text  : The text of interest
 	:param wrap_width : The width at which lines are wrapped
 	'''
-	# TODO: Once the fix for https://github.com/python/typeshed/issues/4888 has propagated out, remove the `type: ignore[call-overload]`
 	return list(itertools.accumulate(
-		num_wrapped_lines_of_length( x, wrap_width=wrap_width ) for x in disp_text.line_term_lengths
-	)) # type: ignore[call-overload]
+		num_wrapped_lines_of_length(x, wrap_width=wrap_width) for x in disp_text.line_term_lengths
+	))
 
 
-def _wrapped_line_index_of_id( id: WrappedLineId,
-                               *,
-                               num_wrapped_lines_by_end: List[int],
-                               ) -> int:
+def _wrapped_line_index_of_id(line_id: WrappedLineId,
+                              *,
+                              num_wrapped_lines_by_end: List[int],
+                              ) -> int:
 	'''
 	The index of the wrapped line identified by the specified WrappedLineId
 
 	Requires wrapped_line_id to be an valid ID of a wrapped line wrap_width, or WrappedLineId(num_lines, 0)
 
-	:param id                       : The WrappedLineId of the wrapped-line of interest
+	:param line_id                       : The WrappedLineId of the wrapped-line of interest
 	:param num_wrapped_lines_by_end : The number of wrapped lines that are completed by the end of each of the full lines
 	'''
-	return id.wrapped_line_offset + (
-		0 if id.line_index == 0 else num_wrapped_lines_by_end[id.line_index-1]
-	 )
+	return line_id.wrapped_line_offset + (
+		0 if line_id.line_index == 0 else num_wrapped_lines_by_end[line_id.line_index - 1]
+	)
 
 
-def _wrapped_line_id_of_index( index: int,
-                               *,
-                               num_wrapped_lines_by_end: List[int],
-                               min_full_line_index: int,
-                               max_full_line_index: int,
-                               ) -> WrappedLineId:
+def _wrapped_line_id_of_index(index: int,
+                              *,
+                              num_wrapped_lines_by_end: List[int],
+                              min_full_line_index: int,
+                              max_full_line_index: int,
+                              ) -> WrappedLineId:
 	'''
 	The WrappedLineId corresponding to the index-th wrapped line in the text described by
 	num_wrapped_lines_by_end, where the answer is known to be between min_full_line_index
@@ -118,13 +115,13 @@ def _wrapped_line_id_of_index( index: int,
 		num_wrapped_lines_by_end,
 		index,
 		lo=min_full_line_index,
-		# hi=max_full_line_index,
+		hi=max_full_line_index,
 	)
 
 	# Return a WrappedLineId for full_line_index and however many more lines are required to get to index
 	# (clamping to a valid WrappedLineId for the num_wrapped_lines_by_end, or WrappedLineId(num_lines, 0)
 	wrapped_lines_before_full_line: int = _wrapped_line_index_of_id(
-		WrappedLineId(full_line_index,0),
+		WrappedLineId(full_line_index, 0),
 		num_wrapped_lines_by_end=num_wrapped_lines_by_end
 	)
 	return WrappedLineId(
@@ -133,12 +130,12 @@ def _wrapped_line_id_of_index( index: int,
 	)
 
 
-def add_wrapped_line_offset( wrapped_line_id: WrappedLineId,
-                             offset: int,
-                             *,
-                             text: DisplayText,
-                             wrap_width: WrapWidth,
-                             ) -> WrappedLineId:
+def add_wrapped_line_offset(wrapped_line_id: WrappedLineId,
+                            offset: int,
+                            *,
+                            text: DisplayText,
+                            wrap_width: WrapWidth,
+                            ) -> WrappedLineId:
 	'''
 	The result of adding the specified offset number of wrapped lines to the specified WrappedLineId
 	in the specified text using the specified wrap-width
@@ -153,26 +150,27 @@ def add_wrapped_line_offset( wrapped_line_id: WrappedLineId,
 	:param wrap_width      : The width at which lines are wrapped
 	'''
 	# Get a list of the numbers of wrapped lines that have been accumulated by the end of each of the lines
-	num_wrapped_lines_by_end: List[int] = _num_wrapped_lines_by_end( text, wrap_width=wrap_width )
+	num_wrapped_lines_by_end: List[int] = _num_wrapped_lines_by_end(text, wrap_width=wrap_width)
 
 	# Convert to wrapped-line index and add the offset
-	new_index: int = _wrapped_line_index_of_id( wrapped_line_id, num_wrapped_lines_by_end=num_wrapped_lines_by_end ) + offset
+	new_index: int = _wrapped_line_index_of_id(wrapped_line_id, num_wrapped_lines_by_end=num_wrapped_lines_by_end) + offset
 
 	# To help narrow down the search for the full-line index, calculate the furthest the full-line index could now be
 	# (which can't have involved a move greater than offset because every full line has at least one wrapped line)
 	# and then clamp between 0 and the number of lines (inclusive; not len-1 because bisect might need to return the one-after-end value)
-	furthest_possible_full_line_index = max( 0, min( len( num_wrapped_lines_by_end ), wrapped_line_id.line_index + offset ) )
+	furthest_possible_full_line_index = max(0, min(len(num_wrapped_lines_by_end), wrapped_line_id.line_index + offset))
 
 	# Convert the result back to a WrappedLineId
 	#
 	# (min_full_line_index shrinks the search range; the min ensures the range is big enough
 	#  for negative offsets; the max ensures the range doesn't try below 0)
 	return _wrapped_line_id_of_index(
-		_wrapped_line_index_of_id( wrapped_line_id, num_wrapped_lines_by_end=num_wrapped_lines_by_end ) + offset,
+		new_index,
 		num_wrapped_lines_by_end=num_wrapped_lines_by_end,
-		min_full_line_index = min( wrapped_line_id.line_index, furthest_possible_full_line_index ),
-		max_full_line_index = max( wrapped_line_id.line_index, furthest_possible_full_line_index ),
+		min_full_line_index=min(wrapped_line_id.line_index, furthest_possible_full_line_index),
+		max_full_line_index=max(wrapped_line_id.line_index, furthest_possible_full_line_index),
 	)
+
 
 @dataclasses.dataclass
 class WrappedLineRange:
@@ -191,12 +189,12 @@ class WrappedLineRange:
 	wrapped_end_offset: int = 0
 
 
-def text_of_wrapped_line_range( disp_text: DisplayText,
-                                wrp_rng: WrappedLineRange,
-                                *,
-                                term: blessed.Terminal,
-                                wrap_width: WrapWidth,
-                                ):
+def text_of_wrapped_line_range(disp_text: DisplayText,
+                               wrp_rng: WrappedLineRange,
+                               *,
+                               term: blessed.Terminal,
+                               wrap_width: WrapWidth,
+                               ):
 	'''
 	The part of the specified DisplayText specified by the specified WrappedLineRange
 	(wrapped using the specified blessed.Terminal and WrapWidth)
@@ -220,12 +218,12 @@ def text_of_wrapped_line_range( disp_text: DisplayText,
 	)
 
 
-def wrapped_line_ranges_between( begin_id: WrappedLineId,
-                                 end_id: WrappedLineId,
-                                 *,
-                                 line_term_lengths: List[int],
-                                 wrap_width: WrapWidth,
-                                 ) -> Iterable[WrappedLineRange]:
+def wrapped_line_ranges_between(begin_id: WrappedLineId,
+                                end_id: WrappedLineId,
+                                *,
+                                line_term_lengths: List[int],
+                                wrap_width: WrapWidth,
+                                ) -> Iterable[WrappedLineRange]:
 	'''
 	WrappedLineRange specs to cover the text between begin_id and end_id, given the
 	specified line_term_lengths and WrapWidth
@@ -235,32 +233,31 @@ def wrapped_line_ranges_between( begin_id: WrappedLineId,
 	:param line_term_lengths : The terminal display lengths of the lines
 	:param wrap_width        : The width at which lines are wrapped
 	'''
-	# Exclude empty lines
-	return filter(
-		lambda x: x.wrapped_begin_offset < x.wrapped_end_offset,
-		(
-			# Calculate the part of the line required
-			WrappedLineRange(
-				line_index=full_line_idx,
-				wrapped_begin_offset=begin_id.wrapped_line_offset if full_line_idx == begin_id.line_index else 0,
-				wrapped_end_offset=(
-					end_id.wrapped_line_offset
-					if full_line_idx == end_id.line_index else
-					num_wrapped_lines_of_length(
-						line_term_lengths[full_line_idx], wrap_width=wrap_width)
-				)
-			) for full_line_idx in range( begin_id.line_index, end_id.line_index + 1 )
-		)
+	parts_of_lines = (
+		# Calculate the part of the line required
+		WrappedLineRange(
+			line_index=full_line_idx,
+			wrapped_begin_offset=begin_id.wrapped_line_offset if full_line_idx == begin_id.line_index else 0,
+			wrapped_end_offset=(
+				end_id.wrapped_line_offset
+				if full_line_idx == end_id.line_index else
+				num_wrapped_lines_of_length(
+					line_term_lengths[full_line_idx], wrap_width=wrap_width)
+			)
+		) for full_line_idx in range(begin_id.line_index, end_id.line_index + 1)
 	)
+	# Exclude empty lines
+	return (x for x in parts_of_lines if x.wrapped_begin_offset < x.wrapped_end_offset)
 
 
-def wrapped_lines_region_of( disp_text: DisplayText,
-                             *,
-                             term: blessed.Terminal,
-                             begin_id: WrappedLineId,
-                             max_num_wrapped_lines: int,
-                             wrap_width: WrapWidth,
-                             ) -> str:
+def wrapped_lines_region_of(disp_text: DisplayText,
+                            *,
+                            term: blessed.Terminal,
+                            begin_id: WrappedLineId,
+                            max_num_wrapped_lines: int,
+                            wrap_width: WrapWidth,
+                            join_str: str = "\n",
+                            ) -> str:
 	'''
 	Return the part of the text to be displayed, starting from the specified WrappedLineId and
 	continuing for max_num_wrapped_lines (using the specified blessed.Terminal and WrapWidth)
@@ -281,7 +278,7 @@ def wrapped_lines_region_of( disp_text: DisplayText,
 		wrap_width=wrap_width,
 	)
 
-	return "\n".join(
+	return join_str.join(
 		text_of_wrapped_line_range(
 			disp_text,
 			wrp_rng,
@@ -295,4 +292,3 @@ def wrapped_lines_region_of( disp_text: DisplayText,
 			wrap_width=wrap_width,
 		)
 	)
-

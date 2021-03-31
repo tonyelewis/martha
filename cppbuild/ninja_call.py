@@ -1,3 +1,4 @@
+import subprocess
 import json
 import logging
 import os
@@ -5,7 +6,6 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List
-from subprocess import PIPE, run
 
 logger = logging.getLogger(__name__)
 
@@ -15,10 +15,12 @@ def _result_of_checked_ninja_run(command: List[str], **kwargs):
 	Run the specified ninja command, raising a descriptive ChildProcessError if it fails or returning the
 	run() result otherwise
 
+	(not using subprocess.CalledProcessError because that doesn't include the stdout/stderr in its self-description)
+
 	:param command : The command to execute
 	:param kwargs  : Any other arguments to pass to run()
 	'''
-	command_result = run(command, stdout=PIPE, stderr=PIPE, **kwargs)
+	command_result = subprocess.run(command, capture_output=True, check=False, text=True, **kwargs)
 	if command_result.returncode != 0:
 		raise ChildProcessError(
 			f'Execution of ninja command "{ " ".join(command) }" failed with returncode {command_result.returncode}.'
@@ -43,7 +45,7 @@ def get_ninja_deps_str_for_dir(ninja_build_dir: Path) -> str:
 		'-t', 'deps',
 	] )
 
-	return ninja_deps_result.stdout.decode()
+	return ninja_deps_result.stdout
 
 
 
@@ -113,7 +115,7 @@ def get_ninja_compdb_str_for_dir(ninja_build_dir: Path) -> str:
 		'-t', 'compdb',
 	])
 
-	return ninja_compdb_result.stdout.decode()
+	return ninja_compdb_result.stdout
 
 
 def get_ninja_compdb_for_dir(ninja_build_dir: Path) -> List[NinjaCompDBRecord]:
